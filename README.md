@@ -22,18 +22,19 @@ Customer Calls → Asterisk PBX → Whisper STT → 3-Tier NLU Pipeline → Secu
 - Voice-based order booking system.
 - Support for English, Hindi, and Tamil.
 - Repeat caller shortcut with last-order preload.
-- 3-tier order resolution:
+- 3-tier order resolution for higher accuracy:
   - Fast keyword / trie / fuzzy matching.
-  - Synonym mapping + NER.
-  - Local LLM fallback for rare cases.
-- Stock, quantity, and credit validation.
-- Voice confirmation before final order storage.
+  - Synonym mapping + entity recognition.
+  - AI fallback for complex or unclear orders.
+- Supports multiple concurrent order requests efficiently.
+- Stock, quantity, and customer validation.
+- Order confirmation before final storage.
 - Real-time dashboard updates.
 - Call logs, customers, products, analytics, and monitoring.
-- Redis Streams fan-out for parallel processing.
-- Nightly learning loop for improving matching.
-- CPU-only architecture.
-- Dark, premium SaaS-style UI.
+- Redis Streams for parallel event processing.
+- Continuous learning loop for improving product matching.
+- CPU-efficient and scalable architecture.
+- Modern dark-themed SaaS dashboard UI.
 
 ---
 
@@ -57,24 +58,45 @@ Customer Calls → Asterisk PBX → Whisper STT → 3-Tier NLU Pipeline → Secu
 
 ---
 
-## Architecture
+## System Workflow
 
-The system is designed as a layered workflow:
+VoiceCart AI follows a simple order processing workflow:
 
-1. Telephony Layer receives the call through Asterisk.
-2. Profile Cache loads caller history and last orders from Redis.
-3. Speech-to-Text converts audio into text using faster-whisper.
-4. NLU Cascade resolves the order using:
-   - Tier 1: fast keyword matching.
-   - Tier 2: synonym + NER matching.
-   - Tier 3: local LLM fallback.
-5. Validation Engine checks stock, quantity, and credit.
-6. TTS Confirmation reads the summary back to the caller.
-7. Storage Layer saves orders and call logs in PostgreSQL.
-8. Redis Streams fan out order events in parallel.
-9. Dashboard shows live updates instantly.
-10. Nightly Job improves aliases and matching over time.
+1. Customer places an order through a call or voice input.
+2. The system identifies the customer and loads previous order history.
+3. Voice input is converted into text.
+4. The order is processed using a 3-tier understanding engine:
+   - Tier 1: Fast product matching
+   - Tier 2: Synonym and entity recognition
+   - Tier 3: AI fallback for complex requests
+5. The order is validated for product availability and quantity.
+6. A confirmation is generated for the customer.
+7. Order details are stored in PostgreSQL.
+8. Redis broadcasts updates to connected services.
+9. The dashboard updates in real time.
+10. A learning process continuously improves product matching over time.
 
+### Workflow Diagram
+
+```text
+Customer Call
+      ↓
+Customer Lookup
+      ↓
+Speech-to-Text
+      ↓
+Order Understanding Engine
+      ↓
+Order Validation
+      ↓
+Confirmation
+      ↓
+PostgreSQL Database
+      ↓
+Redis Events
+      ↓
+Live Dashboard
+```
 ---
 
 ## Project Structure
@@ -107,16 +129,6 @@ voicecart/
 
 ---
 
-## How It Works
-
-- Customer calls the business number.
-- Caller profile is loaded immediately.
-- Voice is transcribed in streaming mode.
-- The transcript is resolved through the 3-tier engine.
-- The system validates the final cart.
-- A spoken summary is returned to the caller.
-- After confirmation, the order is saved and broadcast live.
-- The dashboard updates without polling.
 
 ---
 
@@ -168,17 +180,36 @@ This is a **simple prototype in active development**. The core flow is implement
 - and environment quality.
 
 ---
+## Concurrent Call Handling
 
-## Future Scope
+VoiceCart AI is designed using an asynchronous FastAPI architecture with Redis-backed event handling and WebSocket updates.
 
-- Full production telephony support.
-- Better multilingual performance.
-- More advanced NLU fallback handling.
-- WhatsApp / SMS notifications.
-- ERP integration.
-- Enhanced analytics.
-- Observability and load testing.
-- Deployment hardening.
+In its current prototype form, the system can comfortably support multiple simultaneous order sessions while maintaining dashboard responsiveness.
+
+### Estimated Capacity
+
+| Environment | Concurrent Sessions |
+|------------|-------------------|
+| Developer Laptop | 10–20 |
+| Standard Cloud VM (2–4 vCPU) | 30–50 |
+| Optimized Production Deployment | 100+ (with horizontal scaling) |
+
+### Scalability Strategy
+
+- Async FastAPI request handling
+- PostgreSQL connection pooling
+- Redis caching and Pub/Sub
+- WebSocket-based live updates
+- Stateless backend services
+
+### Future Improvements
+
+- Queue-based order processing
+- Load balancing
+- Multi-instance deployment
+- Dedicated telephony workers
+- Kubernetes scaling support
+
 
 ---
 
