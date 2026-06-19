@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node
+node_modules/
+.next/
+
+# Environment
+.env
+.env.local
+
+# Mac
+.DS_Store
+
+# Database
+*.db
+
+# Logs
+*.log
+
+# Docker Volumes
+pgdata/
+redisdata/.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+node_modules/
+.next/
+dist/
+*.egg-info/
+.DS_Store
+*.log
+.coverage
+htmlcov/
+.pytest_cache/
